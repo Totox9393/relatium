@@ -1,5 +1,6 @@
 const EMAILJS_API_URL = 'https://api.emailjs.com/api/v1.0/email/send';
 const DEFAULT_SUBJECT = 'Message depuis le formulaire de contact';
+const ADMIN_CONTACT_URL = 'https://totox.fr/relatium-contact.php';
 
 type ContactPayload = {
   projectName?: string;
@@ -103,6 +104,11 @@ Deno.serve(async request => {
   const email = cleanText(payload.email, 180);
   const subject = cleanText(payload.subject, 140) || DEFAULT_SUBJECT;
   const message = cleanText(payload.message, 4000);
+  const projectName = cleanText(payload.projectName, 80) || 'Relatium';
+  const projectUrl = cleanText(payload.projectUrl, 240) || origin || 'Non disponible';
+  const os = cleanText(payload.os, 80) || 'Non disponible';
+  const browser = cleanText(payload.browser, 80) || 'Non disponible';
+  const device = cleanText(payload.device, 80) || 'Non disponible';
   const userAgent = cleanText(payload.userAgent || request.headers.get('user-agent'), 500) || 'Non disponible';
 
   if (!firstName || !lastName || !isValidEmail(email) || !message) {
@@ -120,17 +126,17 @@ Deno.serve(async request => {
       user_id: publicKey,
       ...(privateKey ? { accessToken: privateKey } : {}),
       template_params: {
-        projectName: cleanText(payload.projectName, 80) || 'Relatium',
-        projectUrl: cleanText(payload.projectUrl, 240) || origin || 'Non disponible',
+        projectName,
+        projectUrl,
         firstName,
         lastName,
         email,
         subject,
         message,
         ip: getClientIp(request),
-        os: cleanText(payload.os, 80) || 'Non disponible',
-        browser: cleanText(payload.browser, 80) || 'Non disponible',
-        device: cleanText(payload.device, 80) || 'Non disponible',
+        os,
+        browser,
+        device,
         userAgent,
       },
     }),
@@ -140,6 +146,35 @@ Deno.serve(async request => {
     const errorText = await emailjsResponse.text();
     console.error('Erreur EmailJS:', emailjsResponse.status, errorText);
     return jsonResponse({ error: 'Impossible d’envoyer le message.' }, 502, origin);
+  }
+
+  try {
+    const adminResponse = await fetch(ADMIN_CONTACT_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        action: 'add',
+        firstName,
+        lastName,
+        email,
+        subject,
+        message,
+        projectName,
+        projectUrl,
+        os,
+        browser,
+        device,
+        userAgent,
+      }),
+    });
+
+    if (!adminResponse.ok) {
+      console.warn('Sauvegarde contact admin échouée:', adminResponse.status);
+    }
+  } catch (error) {
+    console.warn('Sauvegarde contact admin indisponible:', error);
   }
 
   return jsonResponse({ success: true }, 200, origin);

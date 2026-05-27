@@ -1,6 +1,5 @@
 import { ArrowRight, BarChart3, Bell, BookOpen, Heart, Lightbulb, Search, Send, Sparkles } from 'lucide-react';
 import { useMemo, useRef, useState } from 'react';
-import { supabase } from '../lib/supabaseClient';
 import landingBackground from '../../ressources/fond_landing.png';
 import logoV1 from '../../ressources/logo_v1.png';
 import notebookImage from '../../ressources/repertoire2_icon.png';
@@ -19,6 +18,8 @@ interface BlogPageProps {
 }
 
 const navItems = ['Fonctionnalités', 'À propos', 'Tarifs', 'Blog', 'Contact'];
+
+const NEWSLETTER_ENDPOINT = 'https://totox.fr/relatium-newsletter.php';
 
 const categoryStats: Array<{ label: BlogCategory; displayLabel: string; icon: typeof Lightbulb; badgeClassName: string; countClassName: string }> = [
   {
@@ -89,22 +90,42 @@ const normalize = (value: string) =>
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '');
 
+const isValidEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+
 export function BlogPage({ onLoginClick, onSignupClick, onHomeClick, onFeaturesClick, onAboutClick, onPricingClick, onContactClick, onOpenArticle }: BlogPageProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeCategory, setActiveCategory] = useState<BlogCategory | null>(null);
   const [newsletterEmail, setNewsletterEmail] = useState('');
-  const [newsletterStatus, setNewsletterStatus] = useState<'idle' | 'loading' | 'activated' | 'already_active' | 'not_found' | 'error'>('idle');
+  const [newsletterStatus, setNewsletterStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const feedbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleNewsletterSubmit = async () => {
     const email = newsletterEmail.trim();
-    if (!email) return;
+    if (!isValidEmail(email)) {
+      setNewsletterStatus('error');
+      if (feedbackTimerRef.current) clearTimeout(feedbackTimerRef.current);
+      feedbackTimerRef.current = setTimeout(() => setNewsletterStatus('idle'), 4000);
+      return;
+    }
+
     setNewsletterStatus('loading');
     try {
-      const { data, error } = await supabase.rpc('relatium_subscribe_newsletter', { p_email: email });
-      if (error) throw error;
-      setNewsletterStatus(data as typeof newsletterStatus);
-      if (data === 'activated' || data === 'already_active') setNewsletterEmail('');
+      const response = await fetch(NEWSLETTER_ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+          action: 'subscribe',
+          email,
+          hpt: '',
+        }),
+      });
+
+      if (!response.ok) throw new Error('Newsletter subscription failed');
+
+      setNewsletterStatus('success');
+      setNewsletterEmail('');
       if (feedbackTimerRef.current) clearTimeout(feedbackTimerRef.current);
       feedbackTimerRef.current = setTimeout(() => setNewsletterStatus('idle'), 4000);
     } catch {
@@ -445,16 +466,12 @@ export function BlogPage({ onLoginClick, onSignupClick, onHomeClick, onFeaturesC
                 </div>
 
                 <p className={`mt-3 text-[12px] transition-colors ${
-                  newsletterStatus === 'activated'     ? 'text-emerald-600' :
-                  newsletterStatus === 'already_active'? 'text-violet-500'  :
-                  newsletterStatus === 'not_found'     ? 'text-amber-600'   :
+                  newsletterStatus === 'success'       ? 'text-emerald-600' :
                   newsletterStatus === 'error'         ? 'text-rose-500'    :
                   newsletterStatus === 'loading'       ? 'text-[#8B95AD]'   :
                                                         'text-[#8B95AD]'
                 }`}>
-                  {newsletterStatus === 'activated'      && '✓ Newsletter activée sur votre compte Relatium !'}
-                  {newsletterStatus === 'already_active' && 'Vous êtes déjà abonné à la newsletter.'}
-                  {newsletterStatus === 'not_found'      && 'Aucun compte Relatium associé à cet e-mail.'}
+                  {newsletterStatus === 'success'        && 'Inscription prise en compte.'}
                   {newsletterStatus === 'error'          && 'Une erreur est survenue, réessayez.'}
                   {newsletterStatus === 'loading'        && 'Vérification en cours...'}
                   {newsletterStatus === 'idle'           && 'Pas de spam, désinscription à tout moment.'}

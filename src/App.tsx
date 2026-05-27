@@ -565,11 +565,13 @@ function App() {
 
   const updateGeneralPreference = async (preference: PersistedBooleanPreferenceKey, enabled: boolean) => {
     const userId = session?.user?.id;
+    const accessToken = session?.access_token;
 
     if (!userId) {
       throw new Error('Session introuvable.');
     }
 
+    const previousPreferenceValue = generalPreferences[preference];
     setGeneralPreferences(prev => ({ ...prev, [preference]: enabled }));
 
     const { error: upsertError } = await supabase.from('relatium_user_settings').upsert(
@@ -584,9 +586,48 @@ function App() {
 
     if (upsertError) {
       console.error('Error updating general preference:', upsertError);
-      setGeneralPreferences(prev => ({ ...prev, [preference]: !enabled }));
+      setGeneralPreferences(prev => ({ ...prev, [preference]: previousPreferenceValue }));
       throw new Error('Impossible de mettre à jour la préférence pour le moment.');
     }
+
+    if (preference !== 'newsletter') {
+      return;
+    }
+
+    if (!accessToken) {
+      setGeneralPreferences(prev => ({ ...prev, newsletter: previousPreferenceValue }));
+      throw new Error('Session introuvable.');
+    }
+
+    const { error: syncError } = await supabase.functions.invoke('sync-newsletter-preference', {
+      body: { enabled },
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    if (!syncError) {
+      return;
+    }
+
+    console.error('Error syncing newsletter preference:', syncError);
+
+    const { error: rollbackError } = await supabase.from('relatium_user_settings').upsert(
+      {
+        user_id: userId,
+        setting_name: preference,
+        setting_value: previousPreferenceValue,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: 'user_id,setting_name' },
+    );
+
+    if (rollbackError) {
+      console.error('Error rolling back newsletter preference:', rollbackError);
+    }
+
+    setGeneralPreferences(prev => ({ ...prev, newsletter: previousPreferenceValue }));
+    throw new Error('Impossible de synchroniser la newsletter pour le moment.');
   };
 
   const updateAccentColorPreference = async (accentColor: AccentColor) => {
