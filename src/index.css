@@ -1,0 +1,406 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Desktop scale tuning to match the requested 90% visual density at browser zoom 100% */
+html {
+  font-size: 90%;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+  background: #ece8f6;
+}
+
+body {
+  margin: 0;
+}
+
+:root,
+html[data-accent='violet'] {
+  --accent-50: #f5f3ff;
+  --accent-100: #ede9fe;
+  --accent-200: #ddd6fe;
+  --accent-300: #c4b5fd;
+  --accent-500: #8b5cf6;
+  --accent-600: #7c3aed;
+  --accent-700: #6d28d9;
+}
+
+html[data-accent='blue'] {
+  --accent-50: #eff6ff;
+  --accent-100: #dbeafe;
+  --accent-200: #bfdbfe;
+  --accent-300: #93c5fd;
+  --accent-500: #3b82f6;
+  --accent-600: #2563eb;
+  --accent-700: #1d4ed8;
+}
+
+html[data-accent='green'] {
+  --accent-50: #ecfdf5;
+  --accent-100: #d1fae5;
+  --accent-200: #a7f3d0;
+  --accent-300: #6ee7b7;
+  --accent-500: #10b981;
+  --accent-600: #059669;
+  --accent-700: #047857;
+}
+
+html[data-accent='orange'] {
+  --accent-50: #fff7ed;
+  --accent-100: #ffedd5;
+  --accent-200: #fed7aa;
+  --accent-300: #fdba74;
+  --accent-500: #f97316;
+  --accent-600: #ea580c;
+  --accent-700: #c2410c;
+}
+
+html[data-accent='pink'] {
+  --accent-50: #fdf2f8;
+  --accent-100: #fce7f3;
+  --accent-200: #fbcfe8;
+  --accent-300: #f9a8d4;
+  --accent-500: #ec4899;
+  --accent-600: #db2777;
+  --accent-700: #be185d;
+}
+
+html[data-accent='red'] {
+  --accent-50: #fef2f2;
+  --accent-100: #fee2e2;
+  --accent-200: #fecaca;
+  --accent-300: #fca5a5;
+  --accent-500: #ef4444;
+  --accent-600: #dc2626;
+  --accent-700: #b91c1c;
+}
+
+.bg-violet-50 {
+  background-color: var(--accent-50) !important;
+}
+
+.bg-violet-100 {
+  background-color: var(--accent-100) !important;
+}
+
+.bg-violet-500 {
+  background-color: var(--accent-500) !important;
+}
+
+.bg-violet-600 {
+  background-color: var(--accent-600) !important;
+}
+
+.hover\:bg-violet-700:hover {
+  background-color: var(--accent-700) !important;
+}
+
+.text-violet-600 {
+  color: var(--accent-600) !important;
+}
+
+.text-violet-700 {
+  color: var(--accent-700) !important;
+}
+
+.border-violet-100 {
+  border-color: var(--accent-100) !important;
+}
+
+.border-violet-200 {
+  border-color: var(--accent-200) !important;
+}
+
+.border-violet-300 {
+  border-color: var(--accent-300) !important;
+}
+
+.border-violet-500 {
+  border-color: var(--accent-500) !important;
+}
+
+.ring-violet-100 {
+  --tw-ring-color: color-mix(in oklab, var(--accent-100), transparent 15%) !important;
+}
+
+.ring-violet-200 {
+  --tw-ring-color: color-mix(in oklab, var(--accent-200), transparent 8%) !important;
+}
+
+.ring-violet-500 {
+  --tw-ring-color: var(--accent-500) !important;
+}
+
+.focus\:ring-violet-100:focus {
+  --tw-ring-color: color-mix(in oklab, var(--accent-100), transparent 10%) !important;
+}
+
+.focus-within\:ring-violet-100:focus-within {
+  --tw-ring-color: color-mix(in oklab, var(--accent-100), transparent 10%) !important;
+}
+
+.focus-visible\:ring-violet-200:focus-visible {
+  --tw-ring-color: color-mix(in oklab, var(--accent-200), transparent 8%) !important;
+}
+
+.focus-visible\:ring-violet-300:focus-visible {
+  --tw-ring-color: color-mix(in oklab, var(--accent-300), transparent 8%) !important;
+}
+
+.focus\:border-violet-300:focus,
+.focus-within\:border-violet-300:focus-within {
+  border-color: var(--accent-300) !important;
+}
+
+/* Text colors */
+.text-violet-300 {
+  color: var(--accent-300) !important;
+}
+
+.text-violet-500 {
+  color: var(--accent-500) !important;
+}
+
+.text-violet-800 {
+  color: var(--accent-700) !important;
+}
+
+.text-violet-900 {
+  color: color-mix(in srgb, var(--accent-700) 85%, black) !important;
+}
+
+.text-violet-950 {
+  color: color-mix(in srgb, var(--accent-700) 70%, black) !important;
+}
+
+/* Hover states */
+.hover\:bg-violet-50:hover {
+  background-color: var(--accent-50) !important;
+}
+
+.hover\:bg-violet-100:hover {
+  background-color: var(--accent-100) !important;
+}
+
+.hover\:text-violet-600:hover {
+  color: var(--accent-600) !important;
+}
+
+.hover\:text-violet-700:hover {
+  color: var(--accent-700) !important;
+}
+
+.hover\:text-violet-800:hover {
+  color: color-mix(in srgb, var(--accent-700) 85%, black) !important;
+}
+
+.hover\:border-violet-200:hover {
+  border-color: var(--accent-200) !important;
+}
+
+.hover\:border-violet-300:hover {
+  border-color: var(--accent-300) !important;
+}
+
+/* Group hover */
+.group:hover .group-hover\:text-violet-600 {
+  color: var(--accent-600) !important;
+}
+
+/* Border */
+.border-violet-400 {
+  border-color: color-mix(in srgb, var(--accent-300) 60%, var(--accent-500)) !important;
+}
+
+/* Checkbox accent color */
+.accent-violet-600 {
+  accent-color: var(--accent-600) !important;
+}
+
+/* Gradient stops */
+.from-violet-50 {
+  --tw-gradient-from: var(--accent-50) var(--tw-gradient-from-position) !important;
+  --tw-gradient-to: rgb(255 255 255 / 0) var(--tw-gradient-to-position) !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+}
+
+.from-violet-100 {
+  --tw-gradient-from: var(--accent-100) var(--tw-gradient-from-position) !important;
+  --tw-gradient-to: rgb(255 255 255 / 0) var(--tw-gradient-to-position) !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+}
+
+/* Opacity variants */
+.bg-violet-100\/80 {
+  background-color: color-mix(in srgb, var(--accent-100) 80%, transparent) !important;
+}
+
+.bg-violet-50\/40 {
+  background-color: color-mix(in srgb, var(--accent-50) 40%, transparent) !important;
+}
+
+.bg-violet-50\/50 {
+  background-color: color-mix(in srgb, var(--accent-50) 50%, transparent) !important;
+}
+
+.bg-violet-50\/60 {
+  background-color: color-mix(in srgb, var(--accent-50) 60%, transparent) !important;
+}
+
+.bg-violet-50\/75 {
+  background-color: color-mix(in srgb, var(--accent-50) 75%, transparent) !important;
+}
+
+.border-violet-100\/80 {
+  border-color: color-mix(in srgb, var(--accent-100) 80%, transparent) !important;
+}
+
+.from-violet-50\/45 {
+  --tw-gradient-from: color-mix(in srgb, var(--accent-50) 45%, transparent) var(--tw-gradient-from-position) !important;
+  --tw-gradient-to: rgb(255 255 255 / 0) var(--tw-gradient-to-position) !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+}
+
+img {
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
+@keyframes landing-graph-rotate {
+  from {
+    transform: rotate(0deg) translateZ(0);
+  }
+
+  to {
+    transform: rotate(360deg) translateZ(0);
+  }
+}
+
+@keyframes landing-graph-counter-rotate {
+  from {
+    transform: rotate(0deg) translateZ(0);
+  }
+
+  to {
+    transform: rotate(-360deg) translateZ(0);
+  }
+}
+
+@keyframes landing-graph-node-float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+
+  50% {
+    transform: translate3d(0, -3px, 0);
+  }
+}
+
+@keyframes landing-graph-link-pulse {
+  0%,
+  100% {
+    opacity: 0.82;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes landing-graph-core-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.03);
+  }
+}
+
+@keyframes relatium-view-enter {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 8px, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.landing-graph-rotate {
+  animation: landing-graph-rotate 85s linear infinite;
+  will-change: transform;
+  pointer-events: none;
+}
+
+.landing-graph-counter-rotate {
+  animation: landing-graph-counter-rotate 85s linear infinite;
+  will-change: transform;
+}
+
+.landing-graph-node-float {
+  animation: landing-graph-node-float 6.2s ease-in-out infinite;
+  will-change: transform;
+}
+
+.landing-graph-link-pulse {
+  animation: landing-graph-link-pulse 4.6s ease-in-out infinite;
+  will-change: opacity;
+}
+
+.landing-graph-core-pulse {
+  animation: landing-graph-core-pulse 4.8s ease-in-out infinite;
+  will-change: transform;
+}
+
+.relatium-view-transition {
+  animation: relatium-view-enter 240ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-graph-rotate,
+  .landing-graph-counter-rotate,
+  .landing-graph-node-float,
+  .landing-graph-link-pulse,
+  .landing-graph-core-pulse,
+  .relatium-view-transition {
+    animation: none !important;
+  }
+}
+
+@media (max-width: 1023px) {
+  html {
+    font-size: 100%;
+  }
+}
+
+/* Scrollbar styles */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: #CBD5E1 transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: #CBD5E1;
+  border-radius: 3px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background-color: #94A3B8;
+}
