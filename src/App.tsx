@@ -39,6 +39,7 @@ type AccountProfile = {
   username: string;
   avatar_url: string | null;
   profile_bio: string | null;
+  is_active: boolean;
   onboarding_completed: boolean;
 };
 
@@ -366,12 +367,30 @@ function App() {
       setIsBootstrappingAccount(true);
 
       try {
+        const profile = await fetchAccountProfile(authenticatedUserId);
+        if (cancelled) return;
+
+        if (!profile) {
+          throw new Error('Account profile unavailable.');
+        }
+
+        if (!profile.is_active) {
+          setFriends([]);
+          setRelations([]);
+          setRelationTypes([]);
+          setGroups([]);
+          setFriendGroups({});
+          setGeneralPreferences(DEFAULT_GENERAL_PREFERENCES);
+          lastBootstrappedUserIdRef.current = authenticatedUserId;
+          return;
+        }
+
         const { error: claimError } = await supabase.rpc('relatium_claim_legacy_data');
         if (claimError) {
           console.error('Error claiming legacy data:', claimError);
         }
 
-        await Promise.all([fetchAllData(), fetchAccountProfile(authenticatedUserId), fetchGeneralPreferences(authenticatedUserId)]);
+        await Promise.all([fetchAllData(), fetchGeneralPreferences(authenticatedUserId)]);
         lastBootstrappedUserIdRef.current = authenticatedUserId;
       } catch (bootstrapError) {
         console.error('Error bootstrapping account data:', bootstrapError);
@@ -428,16 +447,18 @@ function App() {
   const fetchAccountProfile = async (userId: string) => {
     const { data, error: accountError } = await supabase
       .from('relatium_accounts')
-      .select('id,username,avatar_url,profile_bio,onboarding_completed')
+      .select('id,username,avatar_url,profile_bio,is_active,onboarding_completed')
       .eq('id', userId)
       .single();
 
     if (accountError) {
       console.error('Error fetching account profile:', accountError);
-      return;
+      return null;
     }
 
-    setAccountProfile(data as AccountProfile);
+    const profile = data as AccountProfile;
+    setAccountProfile(profile);
+    return profile;
   };
 
   const fetchGeneralPreferences = async (userId: string) => {
@@ -1532,6 +1553,28 @@ function App() {
       <div className="flex min-h-screen items-center justify-center bg-slate-50">
         <div className="rounded-xl border border-slate-200 bg-white px-6 py-4 text-sm text-slate-600 shadow-sm">
           Initialisation de votre base Relatium...
+        </div>
+      </div>
+    );
+  }
+
+  if (accountProfile?.is_active === false) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
+        <div className="w-full max-w-md rounded-2xl border border-rose-100 bg-white px-6 py-6 text-center shadow-sm">
+          <h1 className="text-xl font-bold text-slate-950">Compte désactivé</h1>
+          <p className="mt-3 text-sm leading-6 text-slate-600">
+            Votre compte Relatium a été désactivé.
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              void handleSignOut();
+            }}
+            className="mt-5 rounded-xl bg-violet-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-violet-700"
+          >
+            Se déconnecter
+          </button>
         </div>
       </div>
     );
