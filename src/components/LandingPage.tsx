@@ -166,7 +166,7 @@ const featureCards = [
 const toolStats = [
   {
     value: '100%',
-    label: 'Gratuit pour toujours',
+    label: 'Gratuit',
     icon: Heart,
   },
   {

@@ -25,7 +25,7 @@ export function TrailerPage({ onHomeClick }: TrailerPageProps) {
 
       <header className="mx-auto w-full max-w-5xl pt-14 text-center sm:pt-10">
         <h1 className="bg-gradient-to-r from-[#0f2455] via-[#5b5cf0] to-[#8c46f0] bg-clip-text text-3xl font-extrabold text-transparent sm:text-5xl">
-          Trailer Relatium
+          Bienvenue sur Relatium
         </h1>
       </header>
 

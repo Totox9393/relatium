@@ -1,5 +1,5 @@
 import { ArrowLeft } from 'lucide-react';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import logoV1 from '../../../ressources/logo_v1.png';
 import type { BlogArticle } from './ArticleTypes';
 import { blogArticles } from './registry';
@@ -28,6 +28,36 @@ const categoryDisplayLabel: Record<BlogArticle['category'], string> = {
   Guides: 'Guides',
 };
 
+const getArticleUrl = (articleSlug: string) => {
+  const basePath = import.meta.env.BASE_URL.replace(/\/$/, '');
+  const articlePath = `${basePath}/blog/${articleSlug}`;
+
+  if (typeof window === 'undefined') {
+    return articlePath;
+  }
+
+  return new URL(articlePath, window.location.origin).toString();
+};
+
+const normalizeShareText = (text: string) => text.replace(/\s+/g, ' ').trim();
+
+const copyTextToClipboard = async (text: string) => {
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(text);
+    return;
+  }
+
+  const textArea = document.createElement('textarea');
+  textArea.value = text;
+  textArea.setAttribute('readonly', '');
+  textArea.style.position = 'fixed';
+  textArea.style.opacity = '0';
+  document.body.appendChild(textArea);
+  textArea.select();
+  document.execCommand('copy');
+  document.body.removeChild(textArea);
+};
+
 export function ArticleReaderPage({
   article,
   onLoginClick,
@@ -40,7 +70,12 @@ export function ArticleReaderPage({
   onBackToBlog,
   onOpenArticle,
 }: ArticleReaderPageProps) {
+  const [shareFeedback, setShareFeedback] = useState('');
   const summaryItems = [...article.sections.map(section => ({ id: section.id, label: section.title })), { id: 'conclusion', label: 'Conclusion' }];
+  const articleUrl = getArticleUrl(article.slug);
+  const shareTitle = normalizeShareText(article.title);
+  const shareText = `${shareTitle} - ${article.excerpt}`;
+  const canUseNativeShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function';
   const similarArticles = useMemo(() => {
     const sameCategoryArticles = blogArticles.filter(candidate => candidate.category === article.category && candidate.slug !== article.slug);
     const shuffled = [...sameCategoryArticles];
@@ -52,6 +87,49 @@ export function ArticleReaderPage({
 
     return shuffled.slice(0, 3);
   }, [article.category, article.slug]);
+
+  const openShareWindow = (url: string) => {
+    window.open(url, '_blank', 'noopener,noreferrer,width=720,height=640');
+  };
+
+  const handleNativeShare = async () => {
+    try {
+      await navigator.share({
+        title: shareTitle,
+        text: article.excerpt,
+        url: articleUrl,
+      });
+      setShareFeedback('Partage prêt.');
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        return;
+      }
+
+      setShareFeedback('Partage indisponible.');
+    }
+  };
+
+  const handleSocialShare = (network: 'linkedin' | 'x' | 'facebook') => {
+    const encodedUrl = encodeURIComponent(articleUrl);
+    const encodedText = encodeURIComponent(shareText);
+    const shareUrls = {
+      linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`,
+      x: `https://twitter.com/intent/tweet?text=${encodedText}&url=${encodedUrl}`,
+      facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,
+    };
+
+    openShareWindow(shareUrls[network]);
+    setShareFeedback('Publication ouverte dans un nouvel onglet.');
+  };
+
+  const handleCopyLink = async () => {
+    try {
+      await copyTextToClipboard(articleUrl);
+      setShareFeedback('Lien copié.');
+    } catch {
+      setShareFeedback('Copie indisponible.');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-white pb-12">
@@ -229,11 +307,15 @@ export function ArticleReaderPage({
             <section className="border-b border-[#ECE7F4] pb-6">
               <h2 className="text-[26px] font-bold text-[#132A57]">Partagez cet article</h2>
               <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-[13px] font-semibold">
-                <button type="button" className="text-[#2A66BC] transition hover:underline">LinkedIn</button>
-                <button type="button" className="text-[#1D9BF0] transition hover:underline">X</button>
-                <button type="button" className="text-[#1F74F2] transition hover:underline">Facebook</button>
-                <button type="button" className="text-violet-600 transition hover:underline">Copier le lien</button>
+                {canUseNativeShare ? (
+                  <button type="button" onClick={handleNativeShare} className="text-violet-600 transition hover:underline">Partager</button>
+                ) : null}
+                <button type="button" onClick={() => handleSocialShare('linkedin')} className="text-[#2A66BC] transition hover:underline">LinkedIn</button>
+                <button type="button" onClick={() => handleSocialShare('x')} className="text-[#1D9BF0] transition hover:underline">X</button>
+                <button type="button" onClick={() => handleSocialShare('facebook')} className="text-[#1F74F2] transition hover:underline">Facebook</button>
+                <button type="button" onClick={handleCopyLink} className="text-violet-600 transition hover:underline">Copier le lien</button>
               </div>
+              {shareFeedback ? <p className="mt-3 text-[12px] font-semibold text-[#6A7894]">{shareFeedback}</p> : null}
             </section>
 
             <section>
